@@ -24,7 +24,7 @@ After deploying the Active Directory environment (`mylabs.local`), I simulated a
 ### Attack Execution (MITRE T1003.001)
 I executed the `sekurlsa::logonpasswords` command to dump NTLM hashes. As shown below, I successfully extracted the NTLM hash for the **Administrator** account, which grants total control over the domain.
 
-![Mimikatz Credential Dump](1-mimikatz-credential-dump.png)
+![Mimikatz Credential Dump](screenshots/1-mimikatz-credential-dump.png)
 *Figure 1: Successful extraction of the Domain Admin NTLM hash using Mimikatz.*
 
 ---
@@ -36,7 +36,7 @@ Standard Windows Event Logs often fail to capture the granular details of proces
 
 This allowed me to see the exact command line arguments and the file path of the malicious binary (`C:\Safe\mimikatz_trunk\x64\mimikatz.exe`) before it was ingested by the SIEM.
 
-![Sysmon Raw Log](2-sysmon-raw-log.png)
+![Sysmon Raw Log](screenshots/2-sysmon-raw-log.png)
 *Figure 2: Sysmon Event ID 1 capturing the execution of the Mimikatz binary.*
 
 ---
@@ -49,8 +49,10 @@ By default, Wazuh logs this event but does not classify it as a critical threat.
 ### Custom Rule Logic
 I wrote the following logic in `local_rules.xml` to trigger a **Level 10 Alert** whenever the image name matches `mimikatz.exe` (case-insensitive regex).
 
-![Custom Detection Rule](3-custom-detection-rule.png)
+![Custom Detection Rule](screenshots/3-custom-detection-rule.png)
 *Figure 3: Custom XML rule configured on the Wazuh Manager to detect T1003 techniques.*
+
+_The full rule file is available in the [configs/](configs/) directory._
 
 ---
 
@@ -62,7 +64,7 @@ Upon re-executing the attack, the SIEM pipeline worked perfectly:
 2.  **Wazuh Agent** shipped the log to the Manager.
 3.  **Custom Rule 100002** triggered immediately.
 
-![Wazuh Critical Alert](4-wazuh-detection-alert.png)
+![Wazuh Critical Alert](screenshots/4-wazuh-detection-alert.png)
 *Figure 4: Critical Security Alert triggered on the Wazuh Dashboard immediately after the attack.*
 
 ---
